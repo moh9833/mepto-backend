@@ -139,9 +139,59 @@ app.get("/collection-products", async (req, res) => {
 /* =========================
    SERVER START
 ========================= */
+app.post("/generate-token", async (req, res) => {
+  try {
+    const { variant_id } = req.body;
+
+    if (!variant_id) {
+      return res.status(400).json({
+        success: false,
+        message: "variant_id required"
+      });
+    }
+
+    // 1️⃣ Generate HMAC
+    const crypto = await import("crypto");
+
+    const payload = {
+      variant_id: variant_id
+    };
+
+    const hmac = crypto.createHmac("sha256", process.env.SECRET_KEY)
+      .update(JSON.stringify(payload))
+      .digest("hex");
+
+    // 2️⃣ Call Shiprocket Checkout API
+    const response = await axios.post(
+      "https://apiv2.shiprocket.in/v1/external/checkout/token",
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": process.env.API_KEY,
+          "X-HMAC-SHA256": hmac
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      token: response.data.token
+    });
+
+  } catch (error) {
+    console.error("Shiprocket Token Error:", error.response?.data || error.message);
+
+    res.status(500).json({
+      success: false,
+      error: error.response?.data || error.message
+    });
+  }
+});
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
