@@ -10,6 +10,9 @@ const SHEET_API = "https://script.google.com/macros/s/AKfycbzvxbb0wqHoKT3WaKvapM
 /* =========================
    1️⃣ PRODUCTS API
 ========================= */
+app.get("/", (req, res) => {
+  res.send("Mepto Backend Running ✅");
+});
 
 app.get("/products", async (req, res) => {
   try {
@@ -189,9 +192,12 @@ app.post("/generate-token", async (req, res) => {
   }
 });
 
+
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
